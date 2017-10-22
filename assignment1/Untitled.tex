@@ -1,0 +1,58 @@
+\documentclass{article}
+\usepackage{amsmath}
+\begin{document}
+\title{CS533-Assignment1-Report}
+\author{Chunxiao Wang}
+\date{}
+\maketitle
+The assignment is to model video game Pac-Man as a Markov Decision Process(MDP) under some simpler assumptions of ghost movements. Since the initial direction of the ghost movement is assumed to be random, the Pac-Man can be treated as a stochastic MDP. The state space \textit{S}, the action space \textit{A}, the transition space \textit{T} and the reward function \textit{R} are specified as follows.
+
+\begin{enumerate}
+\item\textbf{State Space \textit{S}}\\
+Since we assume only eating a dot, eating a ghost and clearing a board get reward, the bonus items, e.g. cherry in the real game will be ignored here. The state space can be defined as 
+\[
+\textit{S} = (board\_state, Pac\_cur\_d, Pac\_pending\_d, ghost\_cur\_d, ghost\_eatable, ghost\_v)
+\]
+\begin{itemize}
+\item $board\_state$: it is the state of the board array with each array cell taking the possible value from 0(the cell is wall), 1(the cell is empty), 2(the cell is dot), 3(the cell is Pac-man), 4(the cell is ghost1), 5(the cell is ghost2), ... , k(the cell is ghostl)...
+\item $Pac\_cur\_d$: it is the current movement direction of Pac-man with possible values \textit{(mouth up, mouth down, mouth right, mouth left)}.
+\item $Pac\_pending\_d$: it is the pending movement direction of Pac-man with possible values \textit{(mouth up, mouth down, mouth right, mouth left)}. If the Pac-man is currently heading in a direction and the player press the controller, the Pac-man will try to head in a new direction from the pending directions. But the change could be successful or unsuccessful. If successful, the heading direction will change, otherwise, it will stay at the current direction waiting for the new decision of player.
+\item $ghost\_cur\_d$: it is the current movement direction of Pac-man with possible values \textit{(mouth up, mouth down, mouth right, mouth left)}. Since we have simplified assumption about the movements of ghost, there is no necessary to include a $ghost\_pending\_d$.
+\item $ghost\_eatable$: a k column vector with boolean element indicating if the $i$th ghost is eatable.
+\item $ghost\_eatable\_time$: a k column vector with nonnegative number indicating the remaining time the $i$th ghost it eatble.
+\item $ghost\_v$: the velocity of the ghosts.
+\end{itemize}
+
+\item\textbf{Action Space \textit{A}}\\
+The set of controller action with possible values \textit{A} = \textit{(up, down, right, left)}. There could also be a \textit{no-action} action which means the player doing nothing, but to simplify the situation, I choose to ignore it.
+
+\item\textbf{Transition Function \textit{T}}\\
+The transition function specifies the probability of going to state $s' \in \textit{S}$ after action $a \in \textit{A}$ from starting state $s \in \textit{S}$, which is $T(s, a, s')$. We first specify the starting state which is the state when the game begins. The $\textit{board\_state}$ is how the walls, dots, Pac-man and so on are located in the beginning. Usually Pac-man starts at the bottom of the board and the ghost are in the center of the board. Assume PacMan begins facing in an arbitrary direction $d \in \textit{Pac\_cur\_h}$. The $\textit{Pac\_pending\_h}$ could also be set to $d$ because the controller has not moved. The $\textit{ghost\_eatable\_time}$ can be set to $0$ and  $\textit{ghost\_eatable}$ is initialized all elements being false since PacMan has not eaten a large dot yet. The $\textit{ghost\_v}$ can be set as a positive number. When the controller is pressed, an action a is taken. The updates are specified as follows.
+
+\begin{itemize}
+\item If PacMan reaches the boundary of the board and there is no wall there, it will came back to the board from the opposite side of board boundary.
+
+\item When PacMan comes across a small dot, PacMan eats it. Then the dot disappears and the state of the current cell is going to update. When comes across a large dot, PacMan eats it. Then the dot disappears and the current cell is going to update. Also all the elements in $\textit{ghost\_eatable}$ are set to be true, $\textit{ghost\_eatable\_time}$ is set to be a positive number and the $\textit{ghost\_v}$ become a smaller numer. The $\textit{ghost\_eatable\_time}$ will decrease until it goes to 0 indicating ghosts are no longer eatable, $\textit{ghost\_eatable}$  has to be set as false again and the $\textit{ghost\_v}$ is set to be the initial velocity again.
+
+
+\item When PacMan comes across with a ghost and $\textit{ghosts\_eatable}$ is true indicating that the ghost is eatble, PacMan eats the ghost. The ghost will  go back to the board center and  the corresponding element in $\textit{ghosts\_eatable}$ to set to be false.When PacMan comes across a ghost and $\textit{ghosts\_eatable}$ is false for the particular ghost, PacMan dies.
+
+\item The movement updates of ghost is given in the problem description. All ghosts will continue moving in its current direction as indicated in $\textit{ghost\_cur\_h}$. When a ghost reaches a wall, it will randomly pick a possible direction, then we need to update the corresponding element in $\textit{ghost\_cur\_h}$. 
+
+\item When there is no dots and large dots, PacMan wins the level, gets reward points and moves to the next level. The $\textit{ghost\_v}$ will be larger than the velocity in current level.
+\end{itemize}
+
+
+
+\item\textbf{Reward Function \textit{R}}\\
+The \textit{R} is the change of scores between consecutive states. It is 1, 100, 1000 if the Pac-man eats a dot, the Pac-man eats a ghost and all the dots are cleared respectively. The goal is to survive and get through more levels to accumulate more points. This reward function encourages PacMan to survive and get through more levels.
+
+\end{enumerate}
+ 
+\end{document}
+
+
+
+
+
+
